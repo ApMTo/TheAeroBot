@@ -23,8 +23,8 @@ const bot = new TelegramApi(token);
 const app = express();
 
 let isWorking = true;
-let selected = {}; 
-let currentGame = {}; 
+let selected = {};
+let currentGame = {};
 app.use(bodyParser.json());
 
 const checkGroup = async (chatId) => {
@@ -61,23 +61,44 @@ bot.onText(/\/start/, async (msg) => {
   if (msg.text === "/start" && !selected[chatId]) {
     return bot.sendMessage(
       chatId,
-      `Привет! 👋 Добро пожаловать в *AeroGuess Games*! 🎮  
-Здесь тебя ждёт несколько весёлых и умных игр с друзьями в чате! 😄  
-Готов начать? Просто добавь бота в групповой чат и выбери игру.  
-
-🔥 Доступные игры:  
-• *AeroGuess 🧠* — угадай слово по объяснению  
-• *Number Battle 🎲* — угадай число Бота и обыграй других игроков  
-
-✨ *Команды для начала игры*:  
-/startgame — Начать игру  
-/cancelgame — Закончить игру  
-/help — Помощь по играм  
-
-📩 *Если возникнут вопросы* — пиши мне в Telegram! @ApM_To  
-👾 *Телеграм-канал*: https://t.me/aeroguessclub
-`,
-      {parse_mode: "Markdown"}
+      `Привет! 👋 Добро пожаловать в **AeroGuess Games**! 🎮
+      
+    Здесь тебя ждёт много весёлых и умных игр с друзьями в чате! 😄  
+    Готов начать? Просто добавь бота в групповой чат и выбери игру!  
+      
+    🔥 **Доступные игры**:  
+    - **AeroGuess** 🧠 — угадай слово по объяснению  
+    - **Number Battle** 🎲 — угадай число Бота и обыграй других игроков  
+      
+    ✨ **Команды для начала игры**:  
+    /startgame — Начать игру  
+    /cancelgame — Закончить игру  
+    /help — Помощь по играм  
+      
+    📩 **Если возникнут вопросы** — пиши мне в Telegram! [@ApM_To](https://t.me/ApM_To)  
+    👾 **Телеграм-канал**: [https://t.me/aeroguessclub](https://t.me/aeroguessclub)  
+      
+    💬 **Написать в поддержку**: [@ApM_To](https://t.me/ApM_To)  
+    📢 **Подписаться на канал**: [AeroGuess Club](https://t.me/aeroguessclub)`,
+      {
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "💬 Написать в поддержку",
+                url: "https://t.me/ApM_To",
+              },
+            ],
+            [
+              {
+                text: "📢 Подписаться на канал",
+                url: "https://t.me/aeroguessclub",
+              },
+            ],
+          ],
+        },
+      }
     );
   }
 });
@@ -88,10 +109,15 @@ bot.onText(/\/rules/, (msg) => {
   bot.sendMessage(chatId, "Выберите игру:", {
     reply_markup: {
       inline_keyboard: [
-        [{ text: "Конкурс кроссвордов (игра со словами)", callback_data: "word_game" }],
-        [{ text: "Конкурс с цифрами", callback_data: "number_game" }]
-      ]
-    }
+        [
+          {
+            text: "Игра в слова",
+            callback_data: "word_game",
+          },
+        ],
+        [{ text: "Конкурс Красоты", callback_data: "number_game" }],
+      ],
+    },
   });
 });
 
@@ -99,21 +125,21 @@ bot.on("callback_query", (callbackQuery) => {
   const chatId = callbackQuery.message.chat.id;
   const { data } = callbackQuery;
 
-  bot.deleteMessage(chatId, callbackQuery.message.message_id);
-
   let gameRules;
   if (data === "word_game") {
     gameRules = generateGuessWordText();
+    bot.deleteMessage(chatId, callbackQuery.message.message_id);
   } else if (data === "number_game") {
     gameRules = generateBeautyRuleText();
+    bot.deleteMessage(chatId, callbackQuery.message.message_id);
   }
 
   bot.sendMessage(chatId, gameRules, {
     reply_markup: {
       inline_keyboard: [
-        [{ text: "Вернуться в меню", callback_data: "back_to_menu" }]
-      ]
-    }
+        [{ text: "Вернуться в меню", callback_data: "back_to_menu" }],
+      ],
+    },
   });
 });
 
@@ -126,14 +152,18 @@ bot.on("callback_query", (callbackQuery) => {
     bot.sendMessage(chatId, "Выберите игру:", {
       reply_markup: {
         inline_keyboard: [
-          [{ text: "Конкурс кроссвордов (игра со словами)", callback_data: "word_game" }],
-          [{ text: "Конкурс с цифрами", callback_data: "number_game" }]
-        ]
-      }
+          [
+            {
+              text: "Конкурс кроссвордов (игра со словами)",
+              callback_data: "word_game",
+            },
+          ],
+          [{ text: "Конкурс с цифрами", callback_data: "number_game" }],
+        ],
+      },
     });
   }
 });
-
 
 bot.onText(/\/startgame/, async (msg) => {
   const chatId = msg.chat.id;
@@ -146,10 +176,10 @@ bot.onText(/\/startgame/, async (msg) => {
     );
   }
 
-  let statusDevelopment = checkDevelopmentStatus(isWorking, bot, chatId);
-  if (statusDevelopment.status === true && msg.from.username !== "ApM_To") {
-    return statusDevelopment.message;
-  }
+  // let statusDevelopment = checkDevelopmentStatus(isWorking, bot, chatId);
+  // if (statusDevelopment.status === true && msg.from.username !== "ApM_To") {
+  //   return statusDevelopment.message;
+  // }
 
   const checkGroupAndRole = await checkGroup(chatId);
   if (checkGroupAndRole.status === false) {
@@ -173,13 +203,14 @@ bot.onText(/\/startgame/, async (msg) => {
 bot.onText(/\/startgbeautygame/, async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
-  console.log(currentGame[chatId]);
 
   if (currentGame[chatId] === "guessWord") {
     return bot.sendMessage(
       chatId,
       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
     );
+  } else {
+    currentGame[chatId] = null;
   }
 
   const beautyStatus = checkBeautyGameStatus(chatId);
@@ -188,6 +219,12 @@ bot.onText(/\/startgbeautygame/, async (msg) => {
       chatId,
       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
     );
+  } else {
+    currentGame[chatId] = null;
+  }
+  const checkGroupAndRole = await checkGroup(chatId);
+  if (checkGroupAndRole.status === false) {
+    return checkGroupAndRole.message;
   }
 
   try {
@@ -216,6 +253,8 @@ bot.onText(/\/startguessgame/, async (msg) => {
       chatId,
       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
     );
+  } else {
+    currentGame[chatId] = null;
   }
 
   const guessWordStatus = checkGameStatus();
@@ -224,12 +263,19 @@ bot.onText(/\/startguessgame/, async (msg) => {
       chatId,
       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
     );
+  }else {
+    currentGame[chatId] = null;
   }
 
-  let statusDevelopment = checkDevelopmentStatus(isWorking, bot, chatId);
-  if (statusDevelopment.status === true && msg.from.username !== "ApM_To") {
-    return statusDevelopment.message;
+  const checkGroupAndRole = await checkGroup(chatId);
+  if (checkGroupAndRole.status === false) {
+    return checkGroupAndRole.message;
   }
+
+  // let statusDevelopment = checkDevelopmentStatus(isWorking, bot, chatId);
+  // if (statusDevelopment.status === true && msg.from.username !== "ApM_To") {
+  //   return statusDevelopment.message;
+  // }
 
   startGuessWork(bot, chatId, userId, msg.from.first_name);
   currentGame[chatId] = "guessWord";
@@ -306,7 +352,7 @@ bot.setMyCommands([
     command: "/startgbeautygame",
     description: "Начать игру 'Конкурс красоты'",
   },
-  {command: "/rules", description: "Правила игры"},
+  { command: "/rules", description: "Правила игры" },
   { command: "/cancelgame", description: "Завершить игру" },
   { command: "/start", description: "Приветствие" },
 ]);
@@ -334,3 +380,4 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
