@@ -208,9 +208,7 @@ bot.onText(/\/startgbeautygame/, async (msg) => {
       chatId,
       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
     );
-  } else {
-    currentGame[chatId] = null;
-  }
+  } 
 
   const beautyStatus = checkBeautyGameStatus(chatId);
   if (beautyStatus) {
@@ -218,9 +216,7 @@ bot.onText(/\/startgbeautygame/, async (msg) => {
       chatId,
       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
     );
-  } else {
-    currentGame[chatId] = null;
-  }
+  } 
   const checkGroupAndRole = await checkGroup(chatId);
   if (checkGroupAndRole.status === false) {
     return checkGroupAndRole.message;
@@ -252,18 +248,13 @@ bot.onText(/\/startguessgame/, async (msg) => {
       chatId,
       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
     );
-  } else {
-    currentGame[chatId] = null;
-  }
-
+  } 
   const guessWordStatus = checkGameStatus();
   if (guessWordStatus) {
     return bot.sendMessage(
       chatId,
       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
     );
-  }else {
-    currentGame[chatId] = null;
   }
 
   const checkGroupAndRole = await checkGroup(chatId);
@@ -329,6 +320,7 @@ bot.on("callback_query", (query) => {
 
 bot.onText("/cancelgame", async (msg) => {
   const chatId = msg.chat.id;
+  selected[chatId] = false;
 
   if (currentGame[chatId] === null) {
     return;
@@ -340,8 +332,9 @@ bot.onText("/cancelgame", async (msg) => {
     currentGame[chatId] = null;
   }
 
+  currentGame[chatId] = null;
+
   bot.sendMessage(chatId, "🔴 Игра завершена!");
-  selected[chatId] = false;
 });
 
 bot.setMyCommands([
