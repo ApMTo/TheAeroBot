@@ -21,7 +21,7 @@ let newRuleAdded = {
 };
 let selected = false;
 let interval;
-checkBeautyGameStatus = () => {
+checkBeautyGameStatus = (chatId) => {
   if (selected) {
     return true;
   }
@@ -40,7 +40,8 @@ function generateGameText() {
     `🎉 **Старт отбора участников!**\n\n` +
     `Игра "Конкурс Красоты" скоро начнется! 🌹 Ознакомьтесь с правилами и подпишитесь на бота!\n\n` +
     `🔥 Чтобы участвовать:\n1. Ознакомьтесь с правилами\n2. Подпишитесь на бота\n\n` +
-    `**Участники**\n\n${getUsersName()}`
+    `**Участники**\n\n${getUsersName()}\n\n` +
+    `**После игры могу возникнуть ошибки. Чтобы исправить это, напишите /cancelgame`
   );
 }
 
@@ -64,14 +65,16 @@ const beautyGame = (bot, chatId, userId, userName) => {
     })
     .then((msg) => (mainText = msg));
 
-  let timer = 15;
+  let timer = 60;
   interval = setInterval(() => {
     timer--;
-    if (timer === 10 || timer === 5) {
+    if (timer === 30 || timer === 10) {
       bot.sendMessage(chatId, `⏰ Осталось ${timer} секунд`);
     } else if (timer === 0) {
       clearInterval(interval);
-      if (players.length < 2) {
+      if (players.length < 4) {
+        resetBeautyGame(chatId);
+        selected = false;
         return bot.sendMessage(
           chatId,
           "❌ Недостаточно участников для игры. Минимум 4 игрока."
@@ -97,14 +100,24 @@ const beautyGame = (bot, chatId, userId, userName) => {
             show_alert: true,
           });
         }
+
+        players.push(newBeautyGameUser(currentUser.id, currentUser.first_name));
+        bot.editMessageText(generateGameText(), {
+          chat_id: chatId,
+          message_id: mainText.message_id,
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "👀 Учавствовать", callback_data: "start_beauty" }],
+              [{ text: "⚠ Правила игры", callback_data: "rule_beauty" }],
+            ],
+          },
+          parse_mode: "Markdown",
+        });
       }
       if (query.data === "rule_beauty") {
         const userId = query.from.id;
         try {
-          bot.sendMessage(
-            userId,
-            generateBeautyRuleText()
-          );
+          bot.sendMessage(userId, generateBeautyRuleText());
         } catch (error) {
           bot.answerCallbackQuery(query.id, {
             text: "Вы должны быть подписаны на бота, чтобы получить правила.",
@@ -112,19 +125,6 @@ const beautyGame = (bot, chatId, userId, userName) => {
           });
         }
       }
-
-      players.push(newBeautyGameUser(currentUser.id, currentUser.first_name));
-      bot.editMessageText(generateGameText(), {
-        chat_id: chatId,
-        message_id: mainText.message_id,
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: "👀 Учавствовать", callback_data: "start_beauty" }],
-            [{ text: "⚠ Правила игры", callback_data: "rule_beauty" }],
-          ],
-        },
-        parse_mode: "Markdown",
-      });
     });
   }
 };
@@ -213,14 +213,14 @@ async function startRound(bot, groupId) {
             secondPlayer.score += 1;
             await bot.sendMessage(
               groupId,
-              `⚔️ [${firstPlayer.username}](tg://user?id=${firstPlayer.userId}) выбрал **0**, а [${secondPlayer.username}](tg://user?id=${secondPlayer.userId}) выбрал **100**.\n\n🏆 [${secondPlayer.username}] теряет **1 балл** и проигрывает раунд.`,
+              `⚔️ [${firstPlayer.username}](tg://user?id=${firstPlayer.userId}) выбрал(а) **0**, а [${secondPlayer.username}](tg://user?id=${secondPlayer.userId}) выбрал(а) **100**.\n\n🏆 [${secondPlayer.username}] теряет **1 балл** и проигрывает раунд.`,
               { parse_mode: "Markdown" }
             );
           } else if (isFirst100 && isSecond0) {
             firstPlayer.score += 1;
             await bot.sendMessage(
               groupId,
-              `⚔️ [${secondPlayer.username}](tg://user?id=${secondPlayer.userId}) выбрал **0**, а [${firstPlayer.username}](tg://user?id=${firstPlayer.userId}) выбрал **100**.\n\n🏆 [${firstPlayer.username}] теряет **+1 балл** и проигрывает раунд.`,
+              `⚔️ [${secondPlayer.username}](tg://user?id=${secondPlayer.userId}) выбрал(а) **0**, а [${firstPlayer.username}](tg://user?id=${firstPlayer.userId}) выбрал(а) **100**.\n\n❌ [${firstPlayer.username}] теряет **+1 балл** и проигрывает раунд.`,
               { parse_mode: "Markdown" }
             );
           } else if (isFirst0 && isSecond0) {
@@ -231,6 +231,7 @@ async function startRound(bot, groupId) {
               `⚔️ Оба финалиста выбрали **0**! Каждый из них теряет **1 балл**.`,
               { parse_mode: "Markdown" }
             );
+            return eliminateAndContinue(bot, groupId); 
           } else {
             await standardWinnerCalc(bot, groupId);
             return;
@@ -338,7 +339,7 @@ async function standardWinnerCalc(bot, groupId) {
 }
 
 async function eliminateAndContinue(bot, groupId) {
-  const eliminatedPlayers = players.filter((p) => p.score >= 3);
+  const eliminatedPlayers = players.filter((p) => p.score >= 10);
   if (eliminatedPlayers.length > 0) {
     for (const p of eliminatedPlayers) {
       await bot.sendMessage(
@@ -349,7 +350,7 @@ async function eliminateAndContinue(bot, groupId) {
         { parse_mode: "Markdown" }
       );
     }
-    players = players.filter((p) => p.score < 3);
+    players = players.filter((p) => p.score < 10);
   }
 
   if (players.length === 0) {
@@ -371,7 +372,7 @@ async function eliminateAndContinue(bot, groupId) {
       }) ${getRandomVictoryMessage()} 🎉`,
       { parse_mode: "Markdown" }
     );
-    resetBeautyGame();
+    resetBeautyGame(groupId);
     return;
   }
 
