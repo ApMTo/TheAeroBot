@@ -200,7 +200,7 @@ bot.on("callback_query", (callbackQuery) => {
 //   );
 // });
 
-bot.onText(/\/startgbeautygame/, async (msg) => {
+bot.onText(/\/startbeautygame/, async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
 
@@ -350,7 +350,7 @@ bot.setMyCommands([
  // { command: "/startgame", description: "Меню Игр" },
   { command: "/startguessgame", description: "Начать игру 'Игру в слова'" },
   {
-    command: "/startgbeautygame",
+    command: "/startbeautygame",
     description: "Начать игру 'Конкурс красоты'",
   },
   { command: "/rules", description: "Правила игры" },
