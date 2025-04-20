@@ -19,12 +19,12 @@ const {
 } = require("./games/beautyGame");
 
 const token = process.env.TELEGRAM_TOKEN;
-const bot = new TelegramApi(token, { polling: true });
+const bot = new TelegramApi(token);
 const app = express();
 
 let isWorking = true;
-let selected = {}; // Используем объект для отслеживания выбранных игр для каждой группы
-let currentGame = {}; // Используем объект для текущих игр по каждой группе
+let selected = {}; 
+let currentGame = {}; 
 app.use(bodyParser.json());
 
 const checkGroup = async (chatId) => {
@@ -85,7 +85,6 @@ bot.onText(/\/start/, async (msg) => {
 bot.onText(/\/rules/, (msg) => {
   const chatId = msg.chat.id;
 
-  // Создаем меню выбора игры
   bot.sendMessage(chatId, "Выберите игру:", {
     reply_markup: {
       inline_keyboard: [
@@ -312,7 +311,7 @@ bot.setMyCommands([
   { command: "/start", description: "Приветствие" },
 ]);
 
-// bot.setWebHook(`${process.env.SERVER_LINK}/webhook`);
+bot.setWebHook(`${process.env.SERVER_LINK}/webhook`);
 
 app.post("/webhook", (req, res) => {
   const update = req.body;
