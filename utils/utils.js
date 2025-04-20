@@ -18,6 +18,7 @@ const checkDevelopmentStatus = (isWorking, bot, chatId) => {
       ),
     };
   }
+  return {status: false};
 };
 
 const newBeautyGameUser = (userId, username) => {
