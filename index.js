@@ -68,12 +68,11 @@ bot.onText(/\/start/, async (msg) => {
       
     🔥 **Доступные игры**:  
     - **AeroGuess** 🧠 — угадай слово по объяснению  
-    - **Number Battle** 🎲 — угадай число Бота и обыграй других игроков  
       
     ✨ **Команды для начала игры**:  
-    /startgame — Начать игру  
+    /startguessgame — Начать игру "Игру в слова"
     /cancelgame — Закончить игру  
-    /help — Помощь по играм  
+    /rules — Правила игры
       
     📩 **Если возникнут вопросы** — пиши мне в Telegram! [@ApM_To](https://t.me/ApM_To)  
     👾 **Телеграм-канал**: [https://t.me/aeroguessclub](https://t.me/aeroguessclub)  
@@ -115,7 +114,7 @@ bot.onText(/\/rules/, (msg) => {
             callback_data: "word_game",
           },
         ],
-        [{ text: "Конкурс Красоты", callback_data: "number_game" }],
+        // [{ text: "Конкурс Красоты", callback_data: "number_game" }],
       ],
     },
   });
@@ -154,11 +153,11 @@ bot.on("callback_query", (callbackQuery) => {
         inline_keyboard: [
           [
             {
-              text: "Конкурс кроссвордов (игра со словами)",
+              text: "Игра в слова",
               callback_data: "word_game",
             },
           ],
-          [{ text: "Конкурс с цифрами", callback_data: "number_game" }],
+          // [{ text: "Конкурс с цифрами", callback_data: "number_game" }],
         ],
       },
     });
@@ -200,49 +199,49 @@ bot.on("callback_query", (callbackQuery) => {
 //   );
 // });
 
-bot.onText(/\/startbeautygame/, async (msg) => {
-  const chatId = msg.chat.id;
-  const userId = msg.from.id;
+// bot.onText(/\/startbeautygame/, async (msg) => {
+//   const chatId = msg.chat.id;
+//   const userId = msg.from.id;
 
-  if (currentGame[chatId] === "guessWord") {
-    return bot.sendMessage(
-      chatId,
-      "Вы уже выбрали игру! Ждите до окончания текущей игры!"
-    );
-  } else {
-    currentGame[chatId] = null;
-  }
+//   if (currentGame[chatId] === "guessWord") {
+//     return bot.sendMessage(
+//       chatId,
+//       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
+//     );
+//   } else {
+//     currentGame[chatId] = null;
+//   }
 
-  const beautyStatus = checkBeautyGameStatus(chatId);
-  if (beautyStatus) {
-    return bot.sendMessage(
-      chatId,
-      "Вы уже выбрали игру! Ждите до окончания текущей игры!"
-    );
-  } else {
-    currentGame[chatId] = null;
-  }
-  const checkGroupAndRole = await checkGroup(chatId);
-  if (checkGroupAndRole.status === false) {
-    return checkGroupAndRole.message;
-  }
+//   const beautyStatus = checkBeautyGameStatus(chatId);
+//   if (beautyStatus) {
+//     return bot.sendMessage(
+//       chatId,
+//       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
+//     );
+//   } else {
+//     currentGame[chatId] = null;
+//   }
+//   const checkGroupAndRole = await checkGroup(chatId);
+//   if (checkGroupAndRole.status === false) {
+//     return checkGroupAndRole.message;
+//   }
 
-  try {
-    bot.sendMessage(
-      userId,
-      'Вы успешно присоединились к игре "Конкурс красоты" ✅'
-    );
-    beautyGame(bot, chatId, userId, msg.from.first_name);
-    currentGame[chatId] = "beauty";
-    selected[chatId] = true;
-  } catch (error) {
-    console.error("Ошибка при запуске конкурса красоты:", error);
-    bot.sendMessage(
-      chatId,
-      "❌ Произошла ошибка при запуске конкурса красоты. Попробуйте снова."
-    );
-  }
-});
+//   try {
+//     bot.sendMessage(
+//       userId,
+//       'Вы успешно присоединились к игре "Конкурс красоты" ✅'
+//     );
+//     beautyGame(bot, chatId, userId, msg.from.first_name);
+//     currentGame[chatId] = "beauty";
+//     selected[chatId] = true;
+//   } catch (error) {
+//     console.error("Ошибка при запуске конкурса красоты:", error);
+//     bot.sendMessage(
+//       chatId,
+//       "❌ Произошла ошибка при запуске конкурса красоты. Попробуйте снова."
+//     );
+//   }
+// });
 
 bot.onText(/\/startguessgame/, async (msg) => {
   const chatId = msg.chat.id;
@@ -263,7 +262,7 @@ bot.onText(/\/startguessgame/, async (msg) => {
       chatId,
       "Вы уже выбрали игру! Ждите до окончания текущей игры!"
     );
-  }else {
+  } else {
     currentGame[chatId] = null;
   }
 
@@ -347,12 +346,12 @@ bot.onText("/cancelgame", async (msg) => {
 });
 
 bot.setMyCommands([
- // { command: "/startgame", description: "Меню Игр" },
+  // { command: "/startgame", description: "Меню Игр" },
   { command: "/startguessgame", description: "Начать игру 'Игру в слова'" },
-  {
-    command: "/startbeautygame",
-    description: "Начать игру 'Конкурс красоты'",
-  },
+  // {
+  //   command: "/startbeautygame",
+  //   description: "Начать игру 'Конкурс красоты'",
+  // },
   { command: "/rules", description: "Правила игры" },
   { command: "/cancelgame", description: "Завершить игру" },
   { command: "/start", description: "Приветствие" },
@@ -381,4 +380,3 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
